@@ -1,8 +1,0 @@
-spring:
-  datasource:
-    username: photoApp
-    password: photoApp
-    url: jdbc:mysql://localhost/photo_app
-  jpa:
-    hibernate:
-      ddl-auto: update
