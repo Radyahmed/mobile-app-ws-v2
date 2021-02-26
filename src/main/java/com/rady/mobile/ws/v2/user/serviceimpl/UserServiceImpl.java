@@ -11,10 +11,12 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.rady.mobile.ws.v2.exceptions.UserServiceException;
 import com.rady.mobile.ws.v2.io.entity.UserEntity;
 import com.rady.mobile.ws.v2.io.repositories.UserRepository;
 import com.rady.mobile.ws.v2.shared.Utils;
 import com.rady.mobile.ws.v2.shared.dto.UserDto;
+import com.rady.mobile.ws.v2.ui.model.response.ErrorMessages;
 import com.rady.mobile.ws.v2.user.service.UserService;
 
 @Service
@@ -67,6 +69,20 @@ public class UserServiceImpl implements UserService {
 		BeanUtils.copyProperties(userEntity, returnValue);
 
 		return returnValue;
+	}
+
+	@Override
+	public UserDto updateUser(String id, UserDto userDto) {
+		UserDto returnValue = new UserDto();
+		UserEntity userEntity = userRepository.findByUserId(id);
+		if (userEntity == null)
+			throw new UserServiceException(ErrorMessages.NO_RECORD_FOUND.getErrorMessageString());
+		userEntity.setFirstName(userDto.getFirstName());
+		userEntity.setLastName(userDto.getLastName());
+		UserEntity updatedUserEntity = userRepository.save(userEntity);
+		BeanUtils.copyProperties(updatedUserEntity, returnValue);
+		return returnValue;
+
 	}
 
 }
