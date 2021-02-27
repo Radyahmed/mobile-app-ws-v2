@@ -1,10 +1,13 @@
 package com.rady.mobile.ws.v2.user.serviceimpl;
 
-import java.nio.file.attribute.UserPrincipalNotFoundException;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -17,6 +20,7 @@ import com.rady.mobile.ws.v2.io.repositories.UserRepository;
 import com.rady.mobile.ws.v2.shared.Utils;
 import com.rady.mobile.ws.v2.shared.dto.UserDto;
 import com.rady.mobile.ws.v2.ui.model.response.ErrorMessages;
+import com.rady.mobile.ws.v2.ui.model.response.UserRest;
 import com.rady.mobile.ws.v2.user.service.UserService;
 
 @Service
@@ -91,6 +95,22 @@ public class UserServiceImpl implements UserService {
 		if (userEntity == null)
 			throw new UserServiceException(ErrorMessages.NO_RECORD_FOUND.getErrorMessageString());
 		userRepository.delete(userEntity);
+	}
+
+	@Override
+	public List<UserDto> getUsers(int page, int limit) {
+		List<UserDto> returnValue = new ArrayList<UserDto>();
+		if (page > 0)
+			page = page - 1;
+		Pageable pageable = PageRequest.of(page, limit);
+		Page<UserEntity> usersPage = userRepository.findAll(pageable);
+		List<UserEntity> users = usersPage.getContent();
+		for (UserEntity userEntity : users) {
+			UserDto userModel = new UserDto();
+			BeanUtils.copyProperties(userEntity, userModel);
+			returnValue.add(userModel);
+		}
+		return returnValue;
 	}
 
 }
