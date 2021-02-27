@@ -16,6 +16,9 @@ import com.rady.mobile.ws.v2.exceptions.UserServiceException;
 import com.rady.mobile.ws.v2.shared.dto.UserDto;
 import com.rady.mobile.ws.v2.ui.model.request.UserDetailsRequestModel;
 import com.rady.mobile.ws.v2.ui.model.response.ErrorMessages;
+import com.rady.mobile.ws.v2.ui.model.response.OperationStatusModel;
+import com.rady.mobile.ws.v2.ui.model.response.RequestOperationName;
+import com.rady.mobile.ws.v2.ui.model.response.RequestOperationStatus;
 import com.rady.mobile.ws.v2.ui.model.response.UserRest;
 import com.rady.mobile.ws.v2.user.service.UserService;
 
@@ -48,18 +51,26 @@ public class UserController {
 
 	}
 
-	@PutMapping(path = "/{id}", produces = { MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE })
+	@PutMapping(path = "/{id}", produces = { MediaType.APPLICATION_XML_VALUE,
+			MediaType.APPLICATION_JSON_VALUE }, consumes = { MediaType.APPLICATION_XML_VALUE,
+					MediaType.APPLICATION_JSON_VALUE })
 	public UserRest updateUser(@PathVariable String id, @RequestBody UserDetailsRequestModel userDetails) {
 		UserRest returnValue = new UserRest();
 		UserDto userDto = new UserDto();
 		BeanUtils.copyProperties(userDetails, userDto);
-		UserDto updatedUser = UseruserService.updateUser(id,userDto);
+		UserDto updatedUser = UseruserService.updateUser(id, userDto);
 		BeanUtils.copyProperties(updatedUser, returnValue);
 		return returnValue;
 	}
 
-	@DeleteMapping
-	public String deleteUser() {
-		return "delete user was called";
+	@DeleteMapping(path = "/{id}")
+	public OperationStatusModel deleteUser(@PathVariable String id) {
+		OperationStatusModel returnValue = new OperationStatusModel();
+		returnValue.setOperationName(RequestOperationName.DELETE.name());
+		UseruserService.deleteUser(id);
+		returnValue.setOperationResult(RequestOperationStatus.SUCCESS.name());
+
+		return returnValue;
+
 	}
 }
