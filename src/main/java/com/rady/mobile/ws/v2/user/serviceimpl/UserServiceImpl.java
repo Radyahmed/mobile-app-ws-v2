@@ -3,6 +3,7 @@ package com.rady.mobile.ws.v2.user.serviceimpl;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -18,6 +19,7 @@ import com.rady.mobile.ws.v2.exceptions.UserServiceException;
 import com.rady.mobile.ws.v2.io.entity.UserEntity;
 import com.rady.mobile.ws.v2.io.repositories.UserRepository;
 import com.rady.mobile.ws.v2.shared.Utils;
+import com.rady.mobile.ws.v2.shared.dto.AddressDTO;
 import com.rady.mobile.ws.v2.shared.dto.UserDto;
 import com.rady.mobile.ws.v2.ui.model.response.ErrorMessages;
 import com.rady.mobile.ws.v2.ui.model.response.UserRest;
@@ -36,13 +38,21 @@ public class UserServiceImpl implements UserService {
 	public UserDto createUser(UserDto user) {
 		if (userRepository.findByEmail(user.getEmail()) != null)
 			throw new RuntimeException("Record already exists");
-		UserEntity userEntity = new UserEntity();
-		BeanUtils.copyProperties(user, userEntity);
+		for (int i = 0; i < user.getAddress().size(); i++) {
+			AddressDTO addressDTO = user.getAddress().get(i);
+			addressDTO.setUserDetails(user);
+			addressDTO.setAddressid(utils.generateAddressId(30));
+			user.getAddress().set(i, addressDTO);
+		}
+		// BeanUtils.copyProperties(user, userEntity);
+		ModelMapper modelMapper = new ModelMapper();
+		UserEntity userEntity = modelMapper.map(user, UserEntity.class);
 		userEntity.setEncryptedPassword(bCryptPasswordEncoder.encode(user.getPassword()));
 		userEntity.setUserId(utils.generateUserId(30));
 		UserEntity storedUserDetails = userRepository.save(userEntity);
-		UserDto returnValue = new UserDto();
-		BeanUtils.copyProperties(storedUserDetails, returnValue);
+		// BeanUtils.copyProperties(storedUserDetails, returnValue);
+		UserDto returnValue = modelMapper.map(storedUserDetails, UserDto.class);
+
 		return returnValue;
 	}
 
